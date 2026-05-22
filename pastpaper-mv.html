@@ -1,0 +1,911 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Past Paper MV – Your Exam Resource Library</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600;9..40,700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0d0c0a;--paper:#f5f0e8;--cream:#ede7d5;
+  --gold:#c9973a;--gold-light:#e8c46a;--rust:#b84b2f;
+  --text:#1e1c18;--muted:#6b6457;--white:#ffffff;--border:#ddd8ce;
+  --green:#2d7a3a;--green-light:#e8f5ea;
+}
+html{scroll-behavior:smooth}
+body{font-family:'DM Sans',sans-serif;background:var(--paper);color:var(--text);overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");pointer-events:none;z-index:9999;opacity:.3}
+
+/* VIEWS */
+.view{display:none}.view.active{display:block}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:var(--ink);display:flex;align-items:center;justify-content:space-between;padding:0 5vw;height:64px;border-bottom:2px solid var(--gold)}
+.nav-logo{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:var(--gold);letter-spacing:.02em;cursor:pointer}
+.nav-logo span{color:#fff;font-weight:400;font-style:italic}
+.nav-links{display:flex;gap:1.8rem;list-style:none;align-items:center}
+.nav-links a{color:#c8bfab;text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.08em;text-transform:uppercase;transition:color .2s;cursor:pointer}
+.nav-links a:hover{color:var(--gold-light)}
+.nav-cta{background:var(--gold);color:var(--ink)!important;padding:.4rem 1rem;border-radius:2px;font-weight:600!important}
+.nav-cta:hover{background:var(--gold-light)!important}
+.nav-user{display:flex;align-items:center;gap:.8rem}
+.nav-avatar{width:34px;height:34px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:var(--ink);cursor:pointer}
+.nav-username{color:#c8bfab;font-size:.82rem;cursor:pointer}
+.nav-logout{color:#6b6457;font-size:.78rem;cursor:pointer;text-decoration:underline}
+.nav-logout:hover{color:var(--gold)}
+
+/* MODAL OVERLAY */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:500;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);padding:1rem}
+.modal-overlay.open{display:flex}
+.modal{background:var(--paper);border-radius:6px;padding:2.4rem;width:100%;max-width:420px;position:relative;border:1px solid var(--border);animation:modalIn .25s ease;max-height:90vh;overflow-y:auto}
+@keyframes modalIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.modal-close{position:absolute;top:.9rem;right:1.1rem;background:none;border:none;font-size:1.5rem;cursor:pointer;color:var(--muted);line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-title{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;margin-bottom:.3rem}
+.modal-sub{font-size:.83rem;color:var(--muted);margin-bottom:1.6rem}
+.modal-tabs{display:flex;margin-bottom:1.6rem;border:1px solid var(--border);border-radius:3px;overflow:hidden}
+.modal-tab{flex:1;padding:.6rem;text-align:center;font-size:.8rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;background:#fff;color:var(--muted);border:none;transition:all .15s}
+.modal-tab.active{background:var(--ink);color:var(--gold)}
+.form-group{margin-bottom:1rem}
+.form-label{display:block;font-size:.73rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.form-input{width:100%;padding:.72rem 1rem;border:1px solid var(--border);border-radius:3px;font-family:'DM Sans',sans-serif;font-size:.88rem;background:#fff;color:var(--text);outline:none;transition:border-color .2s}
+.form-input:focus{border-color:var(--gold)}
+.form-submit{width:100%;background:var(--ink);color:#fff;border:none;border-radius:3px;padding:.82rem;font-family:'DM Sans',sans-serif;font-size:.88rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s;margin-top:.3rem}
+.form-submit:hover{background:var(--gold);color:var(--ink)}
+.form-error{color:var(--rust);font-size:.78rem;margin-top:-.4rem;margin-bottom:.5rem;display:none}
+.form-error.show{display:block}
+.form-divider{text-align:center;color:var(--muted);font-size:.78rem;margin:.7rem 0}
+
+/* PAYMENT MODAL */
+.pay-modal{max-width:480px}
+.pay-header{background:var(--ink);margin:-2.4rem -2.4rem 1.8rem;padding:1.8rem 2.4rem;border-radius:5px 5px 0 0;border-bottom:3px solid var(--gold)}
+.pay-header-title{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:900;color:#fff}
+.pay-header-sub{font-size:.78rem;color:#a89e8e;margin-top:.2rem}
+.pay-book-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.3rem}
+.pay-book-meta{font-size:.8rem;color:var(--muted);margin-bottom:1.4rem}
+.pay-amount-box{background:var(--ink);border-radius:4px;padding:1.2rem 1.4rem;margin-bottom:1.4rem;display:flex;justify-content:space-between;align-items:center}
+.pay-amount-label{font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:#a89e8e}
+.pay-amount-num{font-family:'Playfair Display',serif;font-size:1.8rem;font-weight:900;color:var(--gold)}
+.pay-steps{margin-bottom:1.4rem}
+.pay-step{display:flex;gap:1rem;align-items:flex-start;margin-bottom:1rem}
+.pay-step-num{width:28px;height:28px;background:var(--gold);color:var(--ink);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0;margin-top:.1rem}
+.pay-step-text{font-size:.85rem;line-height:1.55;color:var(--text)}
+.pay-step-text strong{display:block;margin-bottom:.15rem;font-size:.88rem}
+.pay-account-box{background:#fff;border:2px dashed var(--gold);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.4rem;text-align:center}
+.pay-account-label{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:.4rem}
+.pay-account-num{font-family:'Playfair Display',serif;font-size:1.5rem;font-weight:900;color:var(--ink);letter-spacing:.05em}
+.pay-account-bank{font-size:.75rem;color:var(--muted);margin-top:.2rem}
+.pay-copy-btn{background:var(--cream);border:1px solid var(--border);border-radius:2px;padding:.3rem .8rem;font-size:.72rem;font-weight:600;cursor:pointer;margin-top:.5rem;color:var(--muted);transition:all .15s}
+.pay-copy-btn:hover{background:var(--gold);color:var(--ink);border-color:var(--gold)}
+.pay-wa-btn{display:flex;align-items:center;justify-content:center;gap:.6rem;width:100%;background:#25D366;color:#fff;border:none;border-radius:3px;padding:.9rem;font-family:'DM Sans',sans-serif;font-size:.9rem;font-weight:700;cursor:pointer;transition:background .2s;text-decoration:none;margin-bottom:.8rem}
+.pay-wa-btn:hover{background:#128C7E}
+.pay-wa-icon{font-size:1.2rem}
+.pay-note{font-size:.75rem;color:var(--muted);text-align:center;line-height:1.5;background:var(--cream);padding:.8rem;border-radius:3px}
+
+/* HERO */
+.hero{min-height:88vh;display:grid;grid-template-columns:1fr 1fr;position:relative;overflow:hidden}
+.hero-left{background:var(--ink);display:flex;flex-direction:column;justify-content:center;padding:6rem 5vw 6rem 7vw;position:relative}
+.hero-left::after{content:'';position:absolute;right:-40px;top:0;bottom:0;width:80px;background:var(--ink);clip-path:polygon(0 0,0 100%,100% 100%);z-index:1}
+.hero-label{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:1.4rem;font-weight:500;animation:fadeUp .6s ease both}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,4.5vw,4rem);font-weight:900;line-height:1.1;color:#fff;margin-bottom:1.6rem;animation:fadeUp .6s .1s ease both}
+.hero-title em{color:var(--gold);font-style:italic}
+.hero-subtitle{font-size:1rem;color:#a89e8e;line-height:1.7;max-width:400px;margin-bottom:2.5rem;font-weight:300;animation:fadeUp .6s .2s ease both}
+.hero-btns{display:flex;gap:1rem;flex-wrap:wrap;animation:fadeUp .6s .3s ease both}
+.hero-stats{margin-top:3rem;display:flex;gap:2.5rem;animation:fadeUp .6s .4s ease both}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:700;color:var(--gold);display:block}
+.stat-label{font-size:.75rem;color:#6b6457;text-transform:uppercase;letter-spacing:.1em}
+.hero-right{background:var(--cream);display:flex;align-items:center;justify-content:center;padding:4rem 5vw;animation:fadeUp .8s .2s ease both}
+.book-stack{position:relative;width:320px;height:380px}
+.book-card{position:absolute;width:195px;height:250px;border-radius:3px 8px 8px 3px;display:flex;flex-direction:column;justify-content:flex-end;padding:1.2rem;box-shadow:6px 6px 28px rgba(0,0,0,.18),-2px 0 0 #c7a86a inset;transition:transform .3s;cursor:pointer}
+.book-card:hover{transform:translateY(-8px) rotate(0deg)!important}
+.book-1{background:#1a2d3d;top:20px;left:30px;transform:rotate(-6deg)}
+.book-2{background:#2d1a1a;top:55px;left:85px;transform:rotate(3deg)}
+.book-3{background:#1a2a1a;top:10px;left:145px;transform:rotate(-2deg)}
+.book-card-subject{font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--gold-light);margin-bottom:.3rem;font-weight:500}
+.book-card-title{font-family:'Playfair Display',serif;font-size:.95rem;color:#fff;font-weight:700;line-height:1.25}
+.book-card-year{font-size:.72rem;color:rgba(255,255,255,.45);margin-top:.35rem}
+
+/* SEARCH */
+.search-section{background:var(--ink);padding:2.2rem 5vw;display:flex;justify-content:center}
+.search-bar{display:flex;width:100%;max-width:720px;background:#1a1814;border:1px solid #3a3530;border-radius:3px;overflow:hidden;transition:border-color .2s}
+.search-bar:focus-within{border-color:var(--gold)}
+.search-bar input{flex:1;background:none;border:none;outline:none;padding:.9rem 1.3rem;font-family:'DM Sans',sans-serif;font-size:.9rem;color:#e8e2d8}
+.search-bar input::placeholder{color:#5a5045}
+.search-select{background:#252018;border:none;border-left:1px solid #3a3530;color:#a89e8e;padding:0 1rem;font-family:'DM Sans',sans-serif;font-size:.82rem;cursor:pointer;outline:none}
+.search-btn{background:var(--gold);border:none;padding:0 1.5rem;color:var(--ink);font-family:'DM Sans',sans-serif;font-weight:700;font-size:.82rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.search-btn:hover{background:var(--gold-light)}
+
+/* SHARED */
+section{padding:5rem 5vw}
+.section-label{font-size:.72rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem;font-weight:500}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3vw,2.6rem);font-weight:900;line-height:1.15;margin-bottom:.9rem}
+.section-sub{color:var(--muted);font-size:.92rem;max-width:480px;line-height:1.7;margin-bottom:2.5rem}
+.btn-primary{background:var(--gold);color:var(--ink);padding:.8rem 1.8rem;border:none;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:background .2s,transform .15s;text-decoration:none;display:inline-block}
+.btn-primary:hover{background:var(--gold-light);transform:translateY(-1px)}
+.btn-secondary{background:transparent;color:#c8bfab;padding:.8rem 1.8rem;border:1px solid #3a3530;border-radius:2px;font-family:'DM Sans',sans-serif;font-size:.85rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:border-color .2s,color .2s;text-decoration:none;display:inline-block}
+.btn-secondary:hover{border-color:var(--gold);color:var(--gold)}
+
+/* SUBJECTS */
+.subjects-section{background:#fff}
+.subjects-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:1.1rem}
+.subject-card{background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:1.4rem;cursor:pointer;transition:border-color .2s,transform .2s,box-shadow .2s;position:relative;overflow:hidden}
+.subject-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--gold);transform:scaleY(0);transition:transform .2s}
+.subject-card:hover{border-color:var(--gold);transform:translateY(-3px);box-shadow:0 8px 24px rgba(0,0,0,.08)}
+.subject-card:hover::before{transform:scaleY(1)}
+.subject-icon{font-size:1.6rem;margin-bottom:.7rem}
+.subject-name{font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;margin-bottom:.25rem}
+.subject-count{font-size:.75rem;color:var(--muted)}
+
+/* SHOP */
+.shop-section{background:var(--paper)}
+.books-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:1.6rem}
+.book-item{background:#fff;border-radius:4px;overflow:hidden;border:1px solid var(--border);transition:transform .2s,box-shadow .2s}
+.book-item:hover{transform:translateY(-5px);box-shadow:0 16px 40px rgba(0,0,0,.12)}
+.book-cover{height:155px;display:flex;align-items:center;justify-content:center;font-family:'Playfair Display',serif;font-size:1rem;font-weight:700;color:#fff;text-align:center;padding:1rem;line-height:1.3;position:relative;overflow:hidden}
+.book-cover::after{content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:rgba(255,255,255,.15)}
+.price-badge{position:absolute;top:.7rem;right:.7rem;background:var(--gold);color:var(--ink);font-family:'DM Sans',sans-serif;font-size:.7rem;font-weight:700;padding:.22rem .5rem;border-radius:2px;z-index:1}
+.free-badge{background:var(--green);color:#fff}
+.bc-blue{background:linear-gradient(135deg,#1a2d3d,#253e54)}
+.bc-red{background:linear-gradient(135deg,#2d1a1a,#4a2020)}
+.bc-green{background:linear-gradient(135deg,#1a2a1a,#253a25)}
+.bc-purple{background:linear-gradient(135deg,#25182d,#382045)}
+.bc-brown{background:linear-gradient(135deg,#2d2010,#3d2c14)}
+.bc-navy{background:linear-gradient(135deg,#10152d,#1a2045)}
+.book-info{padding:1rem 1.1rem 1.2rem}
+.book-subject{font-size:.68rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);font-weight:600;margin-bottom:.35rem}
+.book-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;margin-bottom:.2rem;line-height:1.3}
+.book-meta{font-size:.77rem;color:var(--muted);margin-bottom:.7rem}
+.book-price{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--ink);margin-bottom:.9rem}
+.book-actions{display:flex;gap:.5rem}
+.btn-buy{flex:1;background:var(--ink);color:#fff;border:none;border-radius:2px;padding:.52rem;font-family:'DM Sans',sans-serif;font-size:.75rem;font-weight:600;letter-spacing:.04em;cursor:pointer;transition:background .2s;text-transform:uppercase}
+.btn-buy:hover{background:var(--gold);color:var(--ink)}
+.btn-buy.owned{background:var(--green);cursor:pointer}
+.btn-buy.owned:hover{background:#3a9a4a}
+.btn-preview2{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:2px;padding:.52rem .7rem;font-size:.78rem;cursor:pointer;transition:border-color .2s,color .2s}
+.btn-preview2:hover{border-color:var(--gold);color:var(--gold)}
+.filters{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:2.2rem}
+.filter-btn{padding:.4rem 1rem;border:1px solid var(--border);border-radius:2px;background:#fff;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:.78rem;font-weight:500;cursor:pointer;transition:all .15s}
+.filter-btn:hover,.filter-btn.active{background:var(--ink);border-color:var(--ink);color:var(--gold)}
+
+/* HOW IT WORKS */
+.how-section{background:#fff}
+.steps-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1.5rem}
+.step-card{background:var(--paper);border:1px solid var(--border);border-radius:4px;padding:1.8rem 1.5rem;position:relative}
+.step-num{font-family:'Playfair Display',serif;font-size:3rem;font-weight:900;color:var(--gold);opacity:.25;position:absolute;top:.8rem;right:1.2rem;line-height:1}
+.step-icon{font-size:1.8rem;margin-bottom:.9rem}
+.step-title{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;margin-bottom:.5rem}
+.step-desc{font-size:.83rem;color:var(--muted);line-height:1.6}
+
+/* BANNER */
+.banner-section{background:var(--ink);padding:5rem 7vw;display:flex;justify-content:space-between;align-items:center;gap:3rem;flex-wrap:wrap}
+.banner-text .section-title{color:#fff}
+.banner-text .section-sub{color:#a89e8e}
+.feature-item{display:flex;align-items:flex-start;gap:.9rem;margin-bottom:1.1rem}
+.feature-icon{width:34px;height:34px;background:rgba(201,151,58,.15);border:1px solid rgba(201,151,58,.3);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0}
+.feature-text strong{color:#e8e2d8;font-size:.87rem;display:block;margin-bottom:.15rem}
+.feature-text span{color:#6b6457;font-size:.8rem}
+
+/* WHATSAPP FLOAT */
+.wa-float{position:fixed;bottom:1.8rem;right:1.8rem;z-index:300;background:#25D366;color:#fff;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;box-shadow:0 4px 20px rgba(37,211,102,.4);cursor:pointer;text-decoration:none;transition:transform .2s,box-shadow .2s}
+.wa-float:hover{transform:scale(1.1);box-shadow:0 6px 28px rgba(37,211,102,.55)}
+.wa-float-label{position:absolute;right:66px;background:var(--ink);color:#fff;font-size:.75rem;font-weight:600;padding:.35rem .8rem;border-radius:3px;white-space:nowrap;opacity:0;transition:opacity .2s;pointer-events:none}
+.wa-float:hover .wa-float-label{opacity:1}
+
+/* FOOTER */
+footer{background:#080706;padding:4rem 7vw 2rem;color:#6b6457}
+.footer-top{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:3rem;margin-bottom:3rem;padding-bottom:3rem;border-bottom:1px solid #1e1c18}
+.footer-brand .nav-logo{font-size:1.4rem;display:block;margin-bottom:1rem;cursor:default}
+.footer-brand p{font-size:.82rem;line-height:1.7;max-width:240px}
+.footer-wa{display:flex;align-items:center;gap:.5rem;margin-top:1rem;color:#25D366;font-size:.82rem;font-weight:600;text-decoration:none}
+.footer-wa:hover{color:#4ddb82}
+.footer-col h4{font-size:.7rem;letter-spacing:.18em;text-transform:uppercase;color:#a89e8e;margin-bottom:1rem;font-weight:600}
+.footer-col ul{list-style:none}
+.footer-col li{margin-bottom:.55rem}
+.footer-col a{color:#5a5045;text-decoration:none;font-size:.82rem;transition:color .2s;cursor:pointer}
+.footer-col a:hover{color:var(--gold)}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;font-size:.76rem;flex-wrap:wrap;gap:1rem}
+.footer-bottom a{color:var(--gold);text-decoration:none}
+
+/* DASHBOARD */
+#dashView{background:var(--cream);min-height:100vh;padding:0}
+.dash-layout{display:grid;grid-template-columns:240px 1fr;min-height:calc(100vh - 64px)}
+.dash-sidebar{background:var(--ink);padding:2rem 0;border-right:1px solid #1e1c18}
+.dash-nav-item{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.8rem;color:#a89e8e;font-size:.85rem;font-weight:500;cursor:pointer;transition:all .15s;border-left:3px solid transparent}
+.dash-nav-item:hover{color:#fff;background:rgba(255,255,255,.05)}
+.dash-nav-item.active{color:var(--gold);border-left-color:var(--gold);background:rgba(201,151,58,.08)}
+.dash-nav-icon{font-size:1rem;width:20px;text-align:center}
+.dash-nav-divider{border:none;border-top:1px solid #1e1c18;margin:1rem 0}
+.dash-main{padding:2.5rem 3rem;overflow-y:auto}
+.dash-panel{display:none}.dash-panel.active{display:block}
+.dash-hello{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;margin-bottom:.3rem}
+.dash-date{font-size:.82rem;color:var(--muted);margin-bottom:2rem}
+.dash-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:1.2rem;margin-bottom:2.5rem}
+.dash-card{background:#fff;border-radius:4px;padding:1.4rem;border:1px solid var(--border)}
+.dash-card-num{font-family:'Playfair Display',serif;font-size:2rem;font-weight:900;color:var(--gold)}
+.dash-card-label{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-top:.3rem}
+.dash-section-title{font-family:'Playfair Display',serif;font-size:1.25rem;font-weight:700;margin-bottom:1.2rem;margin-top:2rem}
+.purchases-table{width:100%;border-collapse:collapse;background:#fff;border-radius:4px;overflow:hidden;border:1px solid var(--border)}
+.purchases-table th{background:var(--ink);color:var(--gold);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;padding:.8rem 1rem;text-align:left;font-weight:600}
+.purchases-table td{padding:.82rem 1rem;font-size:.83rem;border-bottom:1px solid var(--border);color:var(--text)}
+.purchases-table tr:last-child td{border-bottom:none}
+.purchases-table tr:hover td{background:#faf8f4}
+.badge{display:inline-block;padding:.2rem .55rem;border-radius:2px;font-size:.68rem;font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.badge-paid{background:#e8f5ea;color:var(--green)}
+.badge-free{background:#f0ede5;color:var(--muted)}
+.badge-pending{background:#fff8e8;color:#b07d1a}
+.download-link{color:var(--gold);text-decoration:none;font-size:.8rem;font-weight:600;cursor:pointer}
+.download-link:hover{color:var(--gold-light)}
+.profile-form{max-width:480px}
+.profile-avatar-section{display:flex;align-items:center;gap:1.5rem;margin-bottom:2rem;padding:1.5rem;background:#fff;border-radius:4px;border:1px solid var(--border)}
+.profile-avatar-big{width:64px;height:64px;background:var(--gold);border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.4rem;color:var(--ink)}
+.profile-avatar-info strong{display:block;font-size:.95rem;margin-bottom:.25rem}
+.profile-avatar-info span{font-size:.8rem;color:var(--muted)}
+.empty-state{text-align:center;padding:3rem 1rem;color:var(--muted)}
+.empty-state .empty-icon{font-size:3rem;margin-bottom:1rem;display:block}
+.empty-state p{font-size:.9rem;margin-bottom:1.2rem}
+
+/* PENDING NOTICE in dashboard */
+.pending-notice{background:#fff8e8;border:1px solid #f0d080;border-left:4px solid var(--gold);border-radius:4px;padding:1rem 1.2rem;margin-bottom:1.5rem;font-size:.83rem;line-height:1.6}
+.pending-notice strong{display:block;margin-bottom:.3rem;font-size:.87rem}
+
+/* TOAST */
+.toast{position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(100px);background:var(--ink);color:#fff;padding:.9rem 1.6rem;border-radius:4px;border-left:4px solid var(--gold);font-size:.85rem;z-index:1000;opacity:0;transition:all .3s;pointer-events:none;white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0);opacity:1}
+.toast.error{border-left-color:var(--rust)}
+.toast.success{border-left-color:var(--green)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
+
+@media(max-width:900px){
+  .hero{grid-template-columns:1fr}.hero-right{display:none}.hero-left::after{display:none}
+  .dash-layout{grid-template-columns:1fr}.dash-sidebar{display:none}
+  .footer-top{grid-template-columns:1fr 1fr}
+}
+@media(max-width:600px){nav .nav-links li:not(:last-child){display:none}.dash-main{padding:1.5rem}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showView('homeView')">Past Paper <span>MV</span></div>
+  <ul class="nav-links" id="navLinks">
+    <li><a onclick="gotoSection('#subjects')">Subjects</a></li>
+    <li><a onclick="gotoSection('#shop')">Shop</a></li>
+    <li><a onclick="gotoSection('#how')">How it Works</a></li>
+    <li id="navLoginBtn"><a class="nav-cta" onclick="openModal('login')">Login</a></li>
+    <li id="navUserArea" style="display:none">
+      <div class="nav-user">
+        <div class="nav-avatar" id="navAvatar" onclick="showView('dashView')">?</div>
+        <span class="nav-username" id="navUsername" onclick="showView('dashView')">Student</span>
+        <span class="nav-logout" onclick="logout()">Logout</span>
+      </div>
+    </li>
+  </ul>
+</nav>
+
+<!-- ══ HOME VIEW ══ -->
+<div id="homeView" class="view active">
+
+  <!-- HERO -->
+  <section style="padding:0">
+    <div class="hero">
+      <div class="hero-left">
+        <p class="hero-label">Maldives Exam Resources</p>
+        <h1 class="hero-title">Ace Every<br/>Exam with<br/><em>Past Papers</em></h1>
+        <p class="hero-subtitle">Your ultimate digital library for past papers, model answers, and revision eBooks — curated for students across the Maldives.</p>
+        <div class="hero-btns">
+          <button class="btn-primary" onclick="gotoSection('#shop')">Browse Shop</button>
+          <button class="btn-secondary" onclick="gotoSection('#how')">How it Works</button>
+        </div>
+        <div class="hero-stats">
+          <div><span class="stat-num">1,200+</span><span class="stat-label">Past Papers</span></div>
+          <div><span class="stat-num">40+</span><span class="stat-label">Subjects</span></div>
+          <div><span class="stat-num">MVR</span><span class="stat-label">Easy Pay</span></div>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="book-stack">
+          <div class="book-card book-1"><div class="book-card-subject">Mathematics</div><div class="book-card-title">Cambridge O Level 2023</div><div class="book-card-year">2019–2023 · 5 Papers</div></div>
+          <div class="book-card book-2"><div class="book-card-subject">Physics</div><div class="book-card-title">AS & A Level Complete Pack</div><div class="book-card-year">2018–2023 · 12 Papers</div></div>
+          <div class="book-card book-3"><div class="book-card-subject">Dhivehi</div><div class="book-card-title">SSC Revision Guide</div><div class="book-card-year">2020–2023 · 6 Papers</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SEARCH -->
+  <div class="search-section">
+    <div class="search-bar">
+      <input type="text" placeholder="Search subject, year, exam board..." id="searchInput"/>
+      <select class="search-select" id="levelFilter"><option>All Levels</option><option>O Level</option><option>A Level</option><option>SSC</option><option>HSC</option></select>
+      <button class="search-btn" onclick="doSearch()">Search</button>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <section class="how-section" id="how">
+    <p class="section-label">Simple Process</p>
+    <h2 class="section-title">How to Get<br/>Your Papers</h2>
+    <p class="section-sub">Four easy steps — from browsing to downloading your files.</p>
+    <div class="steps-grid">
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-icon">🛒</div>
+        <div class="step-title">Choose Your Paper</div>
+        <div class="step-desc">Browse the shop and pick the subject pack or eBook you need.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-icon">🏦</div>
+        <div class="step-title">Transfer via BML</div>
+        <div class="step-desc">Transfer the exact amount to our BML account <strong>7730000831103</strong> using BML iPay or Internet Banking.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-icon">💬</div>
+        <div class="step-title">Send Receipt on WhatsApp</div>
+        <div class="step-desc">Send your payment screenshot to our WhatsApp <strong>+960 963 6216</strong> with your email address.</div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-icon">📥</div>
+        <div class="step-title">Get Your Download Link</div>
+        <div class="step-desc">We verify your payment and send you a Google Drive download link — usually within minutes!</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUBJECTS -->
+  <section class="subjects-section" id="subjects">
+    <p class="section-label">Browse by Subject</p>
+    <h2 class="section-title">Choose Your<br/>Subject Area</h2>
+    <p class="section-sub">From sciences to humanities — past paper collections for every major subject in Maldivian schools.</p>
+    <div class="subjects-grid">
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">➕</div><div class="subject-name">Mathematics</div><div class="subject-count">214 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">⚛️</div><div class="subject-name">Physics</div><div class="subject-count">187 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">🧪</div><div class="subject-name">Chemistry</div><div class="subject-count">163 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">🧬</div><div class="subject-name">Biology</div><div class="subject-count">158 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">📖</div><div class="subject-name">English Language</div><div class="subject-count">201 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">🌿</div><div class="subject-name">Dhivehi</div><div class="subject-count">142 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">🌍</div><div class="subject-name">Geography</div><div class="subject-count">119 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">📜</div><div class="subject-name">History</div><div class="subject-count">104 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">💰</div><div class="subject-name">Economics</div><div class="subject-count">137 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">📊</div><div class="subject-name">Business Studies</div><div class="subject-count">122 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">💻</div><div class="subject-name">ICT</div><div class="subject-count">98 papers</div></div>
+      <div class="subject-card" onclick="gotoSection('#shop')"><div class="subject-icon">☪️</div><div class="subject-name">Islamic Studies</div><div class="subject-count">89 papers</div></div>
+    </div>
+  </section>
+
+  <!-- SHOP -->
+  <section class="shop-section" id="shop">
+    <p class="section-label">Digital Shop</p>
+    <h2 class="section-title">Buy Past Papers<br/>& eBooks</h2>
+    <p class="section-sub">Pay via BML bank transfer — receive your Google Drive download link on WhatsApp within minutes.</p>
+    <div class="filters">
+      <button class="filter-btn active" onclick="filterBooks(this,'all')">All</button>
+      <button class="filter-btn" onclick="filterBooks(this,'free')">Free</button>
+      <button class="filter-btn" onclick="filterBooks(this,'O Level')">O Level</button>
+      <button class="filter-btn" onclick="filterBooks(this,'A Level')">A Level</button>
+      <button class="filter-btn" onclick="filterBooks(this,'SSC')">SSC</button>
+      <button class="filter-btn" onclick="filterBooks(this,'HSC')">HSC</button>
+    </div>
+    <div class="books-grid" id="booksGrid"></div>
+  </section>
+
+  <!-- BANNER -->
+  <div class="banner-section" id="about">
+    <div class="banner-text">
+      <p class="section-label">Why Past Paper MV</p>
+      <h2 class="section-title">Built for<br/>Maldivian<br/>Students</h2>
+      <p class="section-sub">Organised, accessible, and affordable resources for every exam season.</p>
+      <a href="https://wa.me/9609636216" target="_blank" class="btn-primary" style="margin-top:1rem;background:#25D366;display:inline-flex;align-items:center;gap:.5rem">💬 Chat on WhatsApp</a>
+    </div>
+    <div>
+      <div class="feature-item"><div class="feature-icon">🏦</div><div class="feature-text"><strong>BML Bank Transfer</strong><span>Pay securely using BML iPay or Internet Banking.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">⚡</div><div class="feature-text"><strong>Fast Delivery</strong><span>Google Drive link sent to you within minutes of payment.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">✅</div><div class="feature-text"><strong>Mark Schemes Included</strong><span>Every paper comes with official marking criteria.</span></div></div>
+      <div class="feature-item"><div class="feature-icon">💬</div><div class="feature-text"><strong>WhatsApp Support</strong><span>Direct support on +960 963 6216 anytime.</span></div></div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="nav-logo">Past Paper <span>MV</span></span>
+        <p>Your digital library of past examination papers for students across the Maldives.</p>
+        <a href="https://wa.me/9609636216" target="_blank" class="footer-wa">💬 +960 963 6216</a>
+        <div style="margin-top:.6rem;font-size:.78rem;color:#5a5045">BML Account: <strong style="color:#a89e8e">7730000831103</strong></div>
+      </div>
+      <div class="footer-col"><h4>Subjects</h4><ul>
+        <li><a onclick="gotoSection('#shop')">Mathematics</a></li>
+        <li><a onclick="gotoSection('#shop')">Physics</a></li>
+        <li><a onclick="gotoSection('#shop')">Chemistry</a></li>
+        <li><a onclick="gotoSection('#shop')">Biology</a></li>
+        <li><a onclick="gotoSection('#shop')">English</a></li>
+        <li><a onclick="gotoSection('#shop')">Dhivehi</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Levels</h4><ul>
+        <li><a onclick="filterAndGo('O Level')">O Level</a></li>
+        <li><a onclick="filterAndGo('A Level')">A Level</a></li>
+        <li><a onclick="filterAndGo('SSC')">SSC</a></li>
+        <li><a onclick="filterAndGo('HSC')">HSC</a></li>
+      </ul></div>
+      <div class="footer-col"><h4>Account</h4><ul>
+        <li><a onclick="openModal('login')">Login</a></li>
+        <li><a onclick="openModal('register')">Register</a></li>
+        <li><a onclick="showView('dashView')">Dashboard</a></li>
+        <li><a onclick="gotoSection('#how')">How it Works</a></li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Past Paper MV. All rights reserved.</span>
+      <span>Made with ❤️ for the <a href="#">Maldives</a></span>
+    </div>
+  </footer>
+</div>
+
+<!-- ══ DASHBOARD VIEW ══ -->
+<div id="dashView" class="view">
+  <div class="dash-layout">
+    <div class="dash-sidebar">
+      <div style="padding:1rem 1.8rem 1.5rem;border-bottom:1px solid #1e1c18;margin-bottom:.5rem">
+        <div style="font-size:.68rem;color:#5a5045;letter-spacing:.14em;text-transform:uppercase;margin-bottom:.5rem">Student Portal</div>
+        <div style="color:#fff;font-family:'Playfair Display',serif;font-weight:700;font-size:.95rem" id="sidebarName">—</div>
+      </div>
+      <div class="dash-nav-item active" onclick="dashPanel('overview',this)"><span class="dash-nav-icon">🏠</span> Overview</div>
+      <div class="dash-nav-item" onclick="dashPanel('purchases',this)"><span class="dash-nav-icon">📦</span> My Purchases</div>
+      <div class="dash-nav-item" onclick="dashPanel('downloads',this)"><span class="dash-nav-icon">📥</span> Downloads</div>
+      <div class="dash-nav-item" onclick="dashPanel('profile',this)"><span class="dash-nav-icon">👤</span> My Profile</div>
+      <hr class="dash-nav-divider"/>
+      <div class="dash-nav-item" onclick="showView('homeView')"><span class="dash-nav-icon">🛒</span> Back to Shop</div>
+      <div class="dash-nav-item" onclick="logout()"><span class="dash-nav-icon">🚪</span> Logout</div>
+    </div>
+    <div class="dash-main">
+
+      <!-- Overview -->
+      <div id="panel-overview" class="dash-panel active">
+        <div class="dash-hello" id="dashHello">Welcome back!</div>
+        <div class="dash-date" id="dashDate"></div>
+        <div class="dash-cards">
+          <div class="dash-card"><div class="dash-card-num" id="cardPurchases">0</div><div class="dash-card-label">Purchases</div></div>
+          <div class="dash-card"><div class="dash-card-num" id="cardPending">0</div><div class="dash-card-label">Pending</div></div>
+          <div class="dash-card"><div class="dash-card-num" id="cardSpent">MVR 0</div><div class="dash-card-label">Total Spent</div></div>
+        </div>
+        <div class="dash-section-title">Recent Orders</div>
+        <div id="overviewPurchases"></div>
+      </div>
+
+      <!-- Purchases -->
+      <div id="panel-purchases" class="dash-panel">
+        <div class="dash-hello">My Purchases</div>
+        <div class="dash-date">Track your orders and payment status</div>
+        <div id="purchasesContent" style="margin-top:1.5rem"></div>
+      </div>
+
+      <!-- Downloads -->
+      <div id="panel-downloads" class="dash-panel">
+        <div class="dash-hello">My Downloads</div>
+        <div class="dash-date">Access confirmed files via Google Drive</div>
+        <div id="downloadsContent" style="margin-top:1.5rem"></div>
+      </div>
+
+      <!-- Profile -->
+      <div id="panel-profile" class="dash-panel">
+        <div class="dash-hello">My Profile</div>
+        <div class="dash-date">Manage your account details</div>
+        <div style="margin-top:1.5rem" class="profile-form">
+          <div class="profile-avatar-section">
+            <div class="profile-avatar-big" id="profileAvatar">?</div>
+            <div class="profile-avatar-info"><strong id="profileName">—</strong><span id="profileEmail">—</span></div>
+          </div>
+          <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="profileNameInput" placeholder="Your name"/></div>
+          <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="profileEmailInput" type="email" placeholder="your@email.com"/></div>
+          <div class="form-group"><label class="form-label">WhatsApp Number</label><input class="form-input" id="profileWA" placeholder="+960 XXXXXXX"/></div>
+          <div class="form-group"><label class="form-label">School / Island</label><input class="form-input" id="profileSchool" placeholder="e.g. Aminiya School, Malé"/></div>
+          <div class="form-group"><label class="form-label">Grade / Year</label>
+            <select class="form-input" id="profileGrade"><option>Grade 9</option><option>Grade 10</option><option>Grade 11</option><option>Grade 12</option><option>Other</option></select>
+          </div>
+          <button class="btn-primary" onclick="saveProfile()">Save Changes</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUTH MODAL ══ -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('authModal')">×</button>
+    <div class="modal-title">Past Paper <span style="color:var(--gold)">MV</span></div>
+    <p class="modal-sub" id="modalSub">Sign in to your student account</p>
+    <div class="modal-tabs">
+      <button class="modal-tab active" id="tabLogin" onclick="switchTab('login')">Login</button>
+      <button class="modal-tab" id="tabRegister" onclick="switchTab('register')">Register</button>
+    </div>
+    <div id="formLogin">
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="loginEmail" type="email" placeholder="your@email.com"/></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="loginPassword" type="password" placeholder="••••••••"/></div>
+      <div class="form-error" id="loginError">Invalid email or password.</div>
+      <button class="form-submit" onclick="doLogin()">Login to Account</button>
+      <div class="form-divider">No account? <a style="color:var(--gold);cursor:pointer" onclick="switchTab('register')">Register free</a></div>
+    </div>
+    <div id="formRegister" style="display:none">
+      <div class="form-group"><label class="form-label">Full Name</label><input class="form-input" id="regName" placeholder="Your full name"/></div>
+      <div class="form-group"><label class="form-label">Email</label><input class="form-input" id="regEmail" type="email" placeholder="your@email.com"/></div>
+      <div class="form-group"><label class="form-label">WhatsApp Number</label><input class="form-input" id="regWA" placeholder="+960 XXXXXXX (for receiving download links)"/></div>
+      <div class="form-group"><label class="form-label">Password</label><input class="form-input" id="regPassword" type="password" placeholder="Min. 6 characters"/></div>
+      <div class="form-error" id="regError">Please fill in all fields correctly.</div>
+      <button class="form-submit" onclick="doRegister()">Create Account</button>
+      <div class="form-divider">Already registered? <a style="color:var(--gold);cursor:pointer" onclick="switchTab('login')">Login</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ PAYMENT MODAL ══ -->
+<div class="modal-overlay" id="payModal">
+  <div class="modal pay-modal">
+    <button class="modal-close" onclick="closeModal('payModal')">×</button>
+    <div class="pay-header">
+      <div class="pay-header-title">Complete Your Purchase</div>
+      <div class="pay-header-sub">Pay via BML · Receive link on WhatsApp</div>
+    </div>
+    <div class="pay-book-name" id="payBookName">—</div>
+    <div class="pay-book-meta" id="payBookMeta">—</div>
+    <div class="pay-amount-box">
+      <div><div class="pay-amount-label">Amount to Transfer</div><div class="pay-amount-num" id="payAmount">MVR 0</div></div>
+      <div style="text-align:right"><div class="pay-amount-label">Reference</div><div style="color:#fff;font-size:.85rem;font-weight:600" id="payRef">—</div></div>
+    </div>
+    <div class="pay-steps">
+      <div class="pay-step"><div class="pay-step-num">1</div><div class="pay-step-text"><strong>Transfer to BML Account</strong>Transfer exactly <span id="payAmountInline" style="font-weight:700;color:var(--gold)">MVR 0</span> to the account below using BML iPay or Internet Banking.</div></div>
+      <div class="pay-account-box">
+        <div class="pay-account-label">Bank of Maldives — BML Account</div>
+        <div class="pay-account-num">7730000831103</div>
+        <div class="pay-account-bank">Past Paper MV</div>
+        <button class="pay-copy-btn" onclick="copyAccount()">📋 Copy Account Number</button>
+      </div>
+      <div class="pay-step"><div class="pay-step-num">2</div><div class="pay-step-text"><strong>Send Receipt on WhatsApp</strong>Take a screenshot of your transfer confirmation and send it to our WhatsApp along with your email address <strong id="payUserEmail" style="color:var(--gold)"></strong> and the reference code <strong id="payRefInline" style="color:var(--gold)"></strong>.</div></div>
+      <div class="pay-step"><div class="pay-step-num">3</div><div class="pay-step-text"><strong>Receive Your Download Link</strong>We'll verify your payment and send the Google Drive download link to your WhatsApp — usually within a few minutes!</div></div>
+    </div>
+    <a id="payWABtn" href="#" target="_blank" class="pay-wa-btn"><span class="pay-wa-icon">💬</span> Open WhatsApp to Send Receipt</a>
+    <div class="pay-note">⏱ Download links are usually sent within <strong>5–15 minutes</strong> during working hours. For urgent requests please message us directly.</div>
+  </div>
+</div>
+
+<!-- WHATSAPP FLOAT -->
+<a href="https://wa.me/9609636216" target="_blank" class="wa-float" title="Chat on WhatsApp">
+  <span class="wa-float-label">Chat with us</span>
+  💬
+</a>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══ DATA ══
+const BML_ACCOUNT = '7730000831103';
+const WA_NUMBER   = '9609636216';
+
+const BOOKS = [
+  {id:1,title:'O Level Mathematics 2019–2023',subject:'Mathematics',level:'O Level',color:'bc-blue',meta:'5 years · 20 papers · Mark schemes included',price:0,   driveUrl:'https://drive.google.com/PLACEHOLDER_MATH_OLEVEL'},
+  {id:2,title:'A Level Physics 2020–2023',    subject:'Physics',    level:'A Level',color:'bc-red',  meta:'4 years · 16 papers · Worked solutions',    price:45,  driveUrl:'https://drive.google.com/PLACEHOLDER_PHYSICS_ALEVEL'},
+  {id:3,title:'Dhivehi Language SSC 2018–2023',subject:'Dhivehi',  level:'SSC',    color:'bc-green', meta:'6 years · 24 papers · Answer keys',          price:35,  driveUrl:'https://drive.google.com/PLACEHOLDER_DHIVEHI_SSC'},
+  {id:4,title:'English Language O Level 2021–2023',subject:'English',level:'O Level',color:'bc-purple',meta:'3 years · 12 papers · Examiner reports',   price:30,  driveUrl:'https://drive.google.com/PLACEHOLDER_ENGLISH_OLEVEL'},
+  {id:5,title:'Chemistry A Level 2022–2023',  subject:'Chemistry', level:'A Level',color:'bc-brown', meta:'2 years · 10 papers · Mark schemes',         price:40,  driveUrl:'https://drive.google.com/PLACEHOLDER_CHEM_ALEVEL'},
+  {id:6,title:'Economics HSC 2019–2023',      subject:'Economics', level:'HSC',    color:'bc-navy',  meta:'5 years · 15 papers · Model answers',        price:50,  driveUrl:'https://drive.google.com/PLACEHOLDER_ECON_HSC'},
+  {id:7,title:'Biology O Level Complete Pack', subject:'Biology',  level:'O Level',color:'bc-green', meta:'4 years · 18 papers · Full mark schemes',    price:35,  driveUrl:'https://drive.google.com/PLACEHOLDER_BIO_OLEVEL'},
+  {id:8,title:'ICT O Level 2020–2023',        subject:'ICT',      level:'O Level',color:'bc-navy',  meta:'4 years · 16 papers',                         price:0,   driveUrl:'https://drive.google.com/PLACEHOLDER_ICT_OLEVEL'},
+];
+
+// ══ DB helpers ══
+const getUsers      = ()=>JSON.parse(localStorage.getItem('ppMV_users')||'[]');
+const saveUsers     = u=>localStorage.setItem('ppMV_users',JSON.stringify(u));
+const getCurrentUser= ()=>JSON.parse(localStorage.getItem('ppMV_current')||'null');
+const saveCurrent   = u=>localStorage.setItem('ppMV_current',JSON.stringify(u));
+const getUserData   = email=>getUsers().find(u=>u.email===email)||null;
+function updateUser(email,data){
+  const users=getUsers(),idx=users.findIndex(u=>u.email===email);
+  if(idx>-1){users[idx]={...users[idx],...data};saveUsers(users);}
+  const cur=getCurrentUser();
+  if(cur&&cur.email===email)saveCurrent({...cur,...data});
+}
+
+// ══ AUTH ══
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass =document.getElementById('loginPassword').value;
+  const err  =document.getElementById('loginError');
+  const user =getUsers().find(u=>u.email===email&&u.password===pass);
+  if(!user){err.classList.add('show');return;}
+  err.classList.remove('show');
+  saveCurrent(user);closeModal('authModal');updateNav(user);
+  showToast('Welcome back, '+user.name+'! 👋','success');
+}
+function doRegister(){
+  const name=document.getElementById('regName').value.trim();
+  const email=document.getElementById('regEmail').value.trim();
+  const wa  =document.getElementById('regWA').value.trim();
+  const pass =document.getElementById('regPassword').value;
+  const err  =document.getElementById('regError');
+  if(!name||!email||pass.length<6){err.textContent='Please fill all fields. Password min 6 chars.';err.classList.add('show');return;}
+  const users=getUsers();
+  if(users.find(u=>u.email===email)){err.textContent='Email already registered.';err.classList.add('show');return;}
+  const newUser={name,email,wa,password:pass,purchases:[],school:'',grade:'Grade 10'};
+  users.push(newUser);saveUsers(users);saveCurrent(newUser);
+  err.classList.remove('show');closeModal('authModal');updateNav(newUser);
+  showToast('Account created! Welcome, '+name+' 🎉','success');
+}
+function logout(){
+  localStorage.removeItem('ppMV_current');updateNav(null);showView('homeView');
+  showToast('Logged out successfully.');
+}
+function updateNav(user){
+  const lb=document.getElementById('navLoginBtn');
+  const ua=document.getElementById('navUserArea');
+  if(user){
+    lb.style.display='none';ua.style.display='';
+    document.getElementById('navAvatar').textContent=user.name.charAt(0).toUpperCase();
+    document.getElementById('navUsername').textContent=user.name.split(' ')[0];
+  } else {lb.style.display='';ua.style.display='none';}
+  renderBooks();
+}
+
+// ══ VIEWS ══
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='dashView'){
+    const user=getCurrentUser();
+    if(!user){openModal('login');showView('homeView');return;}
+    refreshDash(user);
+  }
+  window.scrollTo(0,0);
+}
+
+// ══ MODALS ══
+function openModal(tab){document.getElementById('authModal').classList.add('open');switchTab(tab||'login');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.modal-overlay').forEach(o=>o.addEventListener('click',function(e){if(e.target===this)this.classList.remove('open')}));
+function switchTab(tab){
+  document.getElementById('formLogin').style.display   =tab==='login'?'block':'none';
+  document.getElementById('formRegister').style.display=tab==='register'?'block':'none';
+  document.getElementById('tabLogin').classList.toggle('active',tab==='login');
+  document.getElementById('tabRegister').classList.toggle('active',tab==='register');
+  document.getElementById('modalSub').textContent=tab==='login'?'Sign in to your student account':'Create your free student account';
+}
+
+// ══ PAYMENT MODAL ══
+let currentPayBook=null;
+function openPayModal(id){
+  const user=getCurrentUser();
+  if(!user){showToast('Please login first to purchase.','error');openModal('login');return;}
+  const book=BOOKS.find(b=>b.id===id);if(!book)return;
+  currentPayBook=book;
+  const ref='PPM-'+user.name.replace(/\s/g,'').toUpperCase().slice(0,4)+'-'+book.id+'-'+Date.now().toString().slice(-4);
+  document.getElementById('payBookName').textContent=book.title;
+  document.getElementById('payBookMeta').textContent=book.meta;
+  document.getElementById('payAmount').textContent='MVR '+book.price;
+  document.getElementById('payAmountInline').textContent='MVR '+book.price;
+  document.getElementById('payRef').textContent=ref;
+  document.getElementById('payRefInline').textContent=ref;
+  document.getElementById('payUserEmail').textContent=user.email;
+  // WhatsApp pre-filled message
+  const msg=encodeURIComponent(
+    '📚 Past Paper MV Order\n\n'+
+    'Name: '+user.name+'\n'+
+    'Email: '+user.email+'\n'+
+    'Item: '+book.title+'\n'+
+    'Amount: MVR '+book.price+'\n'+
+    'Reference: '+ref+'\n\n'+
+    '[Please attach your BML transfer screenshot]'
+  );
+  document.getElementById('payWABtn').href='https://wa.me/'+WA_NUMBER+'?text='+msg;
+  document.getElementById('payModal').classList.add('open');
+  // Log as pending in user purchases
+  const users=getUsers();
+  const idx=users.findIndex(u=>u.email===user.email);
+  if(idx>-1){
+    const already=users[idx].purchases.find(p=>p.id===book.id);
+    if(!already){
+      users[idx].purchases.push({id:book.id,title:book.title,price:book.price,date:new Date().toLocaleDateString('en-MV'),ref,status:'pending',driveUrl:book.driveUrl});
+      saveUsers(users);saveCurrent(users[idx]);renderBooks();
+    }
+  }
+}
+
+function copyAccount(){
+  navigator.clipboard.writeText(BML_ACCOUNT).then(()=>showToast('Account number copied! 📋','success')).catch(()=>showToast('Account: '+BML_ACCOUNT));
+}
+
+// ══ BOOKS ══
+function renderBooks(filter='all'){
+  const grid=document.getElementById('booksGrid');if(!grid)return;
+  const user=getCurrentUser();
+  const owned=user?(user.purchases||[]).map(p=>p.id):[];
+  const purch=user?(user.purchases||[]):[];
+  let list=BOOKS;
+  if(filter==='free')list=BOOKS.filter(b=>b.price===0);
+  else if(filter!=='all')list=BOOKS.filter(b=>b.level===filter);
+  grid.innerHTML=list.map(b=>{
+    const isFree=b.price===0;
+    const purchase=purch.find(p=>p.id===b.id);
+    const isOwned=!!purchase;
+    const isPending=purchase&&purchase.status==='pending';
+    const isConfirmed=purchase&&purchase.status==='confirmed';
+    let btnHTML='';
+    if(isFree&&!isOwned){
+      btnHTML=`<button class="btn-buy" onclick="getFree(${b.id})">Get Free</button>`;
+    } else if(isFree&&isOwned){
+      btnHTML=`<button class="btn-buy owned" onclick="downloadFile(${b.id})">⬇ Download</button>`;
+    } else if(isPending){
+      btnHTML=`<button class="btn-buy" style="background:#b07d1a" onclick="openPayModal(${b.id})">⏳ Pending</button>`;
+    } else if(isConfirmed){
+      btnHTML=`<button class="btn-buy owned" onclick="downloadFile(${b.id})">⬇ Download</button>`;
+    } else {
+      btnHTML=`<button class="btn-buy" onclick="openPayModal(${b.id})">Buy Now</button>`;
+    }
+    return `<div class="book-item">
+      <div class="book-cover ${b.color}">
+        ${b.title}
+        <div class="price-badge ${isFree?'free-badge':''}">${isFree?'FREE':'MVR '+b.price}</div>
+      </div>
+      <div class="book-info">
+        <div class="book-subject">${b.subject} · ${b.level}</div>
+        <div class="book-name">${b.title}</div>
+        <div class="book-meta">${b.meta}</div>
+        <div class="book-price">${isFree?'<span style="color:var(--green);font-size:.85rem;font-weight:600;font-family:DM Sans">FREE</span>':'MVR '+b.price}</div>
+        <div class="book-actions">${btnHTML}<button class="btn-preview2" onclick="previewBook(${b.id})">👁</button></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function getFree(id){
+  const user=getCurrentUser();
+  if(!user){showToast('Please login to get free files.','error');openModal('login');return;}
+  const book=BOOKS.find(b=>b.id===id);
+  const users=getUsers(),idx=users.findIndex(u=>u.email===user.email);
+  if(idx>-1&&!users[idx].purchases.find(p=>p.id===id)){
+    users[idx].purchases.push({id,title:book.title,price:0,date:new Date().toLocaleDateString('en-MV'),ref:'FREE',status:'confirmed',driveUrl:book.driveUrl});
+    saveUsers(users);saveCurrent(users[idx]);renderBooks();
+    showToast('Added to your library! 📚','success');
+  }
+}
+
+function downloadFile(id){
+  const user=getCurrentUser();if(!user){openModal('login');return;}
+  const purchase=(user.purchases||[]).find(p=>p.id===id);
+  if(!purchase){showToast('Please purchase this file first.','error');return;}
+  if(purchase.status==='pending'){
+    showToast('Payment pending verification. Send receipt on WhatsApp.','error');return;
+  }
+  if(purchase.driveUrl&&!purchase.driveUrl.includes('PLACEHOLDER')){
+    window.open(purchase.driveUrl,'_blank');
+  } else {
+    showToast('📌 Replace PLACEHOLDER links with real Google Drive URLs in the code.','error');
+  }
+}
+
+function previewBook(id){
+  const book=BOOKS.find(b=>b.id===id);
+  showToast('Preview: '+book.title+' — Add preview PDF link to enable this.');
+}
+
+function filterBooks(btn,f){
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderBooks(f);
+}
+
+function filterAndGo(level){
+  gotoSection('#shop');
+  setTimeout(()=>{
+    document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+    const btns=document.querySelectorAll('.filter-btn');
+    btns.forEach(b=>{if(b.textContent.trim()===level){b.classList.add('active');}});
+    renderBooks(level);
+  },350);
+}
+
+// ══ DASHBOARD ══
+function refreshDash(user){
+  const fresh=getUserData(user.email)||user;
+  const purchases=fresh.purchases||[];
+  const pending=purchases.filter(p=>p.status==='pending').length;
+  const confirmed=purchases.filter(p=>p.status==='confirmed');
+  const total=purchases.reduce((s,p)=>s+p.price,0);
+  document.getElementById('dashHello').textContent='Welcome back, '+fresh.name.split(' ')[0]+'!';
+  document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  document.getElementById('sidebarName').textContent=fresh.name;
+  const ini=fresh.name.split(' ').map(n=>n[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('navAvatar').textContent=ini||'?';
+  document.getElementById('cardPurchases').textContent=purchases.length;
+  document.getElementById('cardPending').textContent=pending;
+  document.getElementById('cardSpent').textContent='MVR '+total;
+  document.getElementById('profileAvatar').textContent=ini||'?';
+  document.getElementById('profileName').textContent=fresh.name;
+  document.getElementById('profileEmail').textContent=fresh.email;
+  document.getElementById('profileNameInput').value=fresh.name;
+  document.getElementById('profileEmailInput').value=fresh.email;
+  document.getElementById('profileWA').value=fresh.wa||'';
+  document.getElementById('profileSchool').value=fresh.school||'';
+  document.getElementById('profileGrade').value=fresh.grade||'Grade 10';
+
+  const tableHTML=purchases.length?`
+    <table class="purchases-table">
+      <thead><tr><th>Title</th><th>Date</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
+      <tbody>${purchases.map(p=>`<tr>
+        <td>${p.title}</td><td>${p.date}</td>
+        <td>${p.price===0?'Free':'MVR '+p.price}</td>
+        <td>${p.status==='confirmed'?'<span class="badge badge-paid">✓ Confirmed</span>':p.status==='pending'?'<span class="badge badge-pending">⏳ Pending</span>':'<span class="badge badge-free">Free</span>'}</td>
+        <td>${p.status==='confirmed'?`<a class="download-link" onclick="downloadFile(${p.id})">⬇ Download</a>`
+            :p.status==='pending'?`<a class="download-link" style="color:#b07d1a" href="https://wa.me/${WA_NUMBER}" target="_blank">💬 Send Receipt</a>`
+            :`<a class="download-link" onclick="downloadFile(${p.id})">⬇ Download</a>`}
+        </td>
+      </tr>`).join('')}
+      </tbody>
+    </table>`
+    :`<div class="empty-state"><span class="empty-icon">📭</span><p>No purchases yet. Head to the shop!</p><button class="btn-primary" onclick="showView('homeView')">Browse Shop</button></div>`;
+
+  const pendingNotice=pending?`<div class="pending-notice"><strong>⏳ ${pending} payment(s) awaiting confirmation</strong>Please send your BML transfer screenshot to WhatsApp <a href="https://wa.me/${WA_NUMBER}" target="_blank" style="color:var(--gold);font-weight:600">+960 963 6216</a> to get your download link.</div>`:'';
+  document.getElementById('overviewPurchases').innerHTML=pendingNotice+tableHTML;
+  document.getElementById('purchasesContent').innerHTML=pendingNotice+tableHTML;
+
+  const dlHTML=confirmed.length?`
+    <table class="purchases-table">
+      <thead><tr><th>Title</th><th>Date</th><th>Download</th></tr></thead>
+      <tbody>${confirmed.map(p=>`<tr><td>${p.title}</td><td>${p.date}</td><td><a class="download-link" onclick="downloadFile(${p.id})">⬇ Google Drive</a></td></tr>`).join('')}
+      </tbody>
+    </table>`
+    :`<div class="empty-state"><span class="empty-icon">📂</span><p>No confirmed downloads yet.<br/>Send your payment receipt on WhatsApp to unlock files.</p><a href="https://wa.me/${WA_NUMBER}" target="_blank" class="btn-primary" style="margin-top:.5rem">💬 Open WhatsApp</a></div>`;
+  document.getElementById('downloadsContent').innerHTML=dlHTML;
+}
+
+function dashPanel(name,el){
+  document.querySelectorAll('.dash-nav-item').forEach(i=>i.classList.remove('active'));
+  el.classList.add('active');
+  document.querySelectorAll('.dash-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById('panel-'+name).classList.add('active');
+}
+
+function saveProfile(){
+  const user=getCurrentUser();if(!user)return;
+  const name =document.getElementById('profileNameInput').value.trim();
+  const wa   =document.getElementById('profileWA').value.trim();
+  const school=document.getElementById('profileSchool').value.trim();
+  const grade=document.getElementById('profileGrade').value;
+  if(!name){showToast('Name cannot be empty.','error');return;}
+  updateUser(user.email,{name,wa,school,grade});
+  updateNav(getCurrentUser());refreshDash(getCurrentUser());
+  showToast('Profile saved! ✅','success');
+}
+
+// ══ UTILS ══
+function gotoSection(id){
+  if(!document.getElementById('homeView').classList.contains('active'))showView('homeView');
+  setTimeout(()=>{const el=document.querySelector(id);if(el)el.scrollIntoView({behavior:'smooth'})},150);
+}
+function doSearch(){
+  const q=document.getElementById('searchInput').value.toLowerCase();
+  gotoSection('#shop');
+  setTimeout(()=>{document.querySelectorAll('.book-item').forEach(item=>{item.style.display=item.textContent.toLowerCase().includes(q)?'':'none';});},400);
+}
+let toastTimer;
+function showToast(msg,type=''){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+(type||'');
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>t.classList.remove('show'),3400);
+}
+
+// ══ INIT ══
+renderBooks();
+const cur=getCurrentUser();
+if(cur)updateNav(cur);
+document.getElementById('dashDate').textContent=new Date().toLocaleDateString('en-US',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+document.getElementById('searchInput').addEventListener('keydown',e=>{if(e.key==='Enter')doSearch();});
+document.getElementById('loginPassword').addEventListener('keydown',e=>{if(e.key==='Enter')doLogin();});
+</script>
+</body>
+</html>
